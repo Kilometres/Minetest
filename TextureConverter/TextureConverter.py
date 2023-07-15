@@ -3,7 +3,6 @@ import shutil, csv, os, tempfile, sys, getopt, json
 
 appname = "TextureConverter.py"
 
-output_dir = os.getcwd()
 base_dir = None
 
 dry_run = False
@@ -12,7 +11,7 @@ verbose = False
 
 PXSIZE = 16
 
-syntax_help = appname+""" -i <input dir> [-s size] [-q] [-v] [-h] 
+syntax_help = appname+""" -i <input dir> [-s size] [-d] [-v] [-h] 
 Mandatory argument:
 -i <input directory>
 	Directory of Minecraft resource pack to convert
@@ -20,8 +19,8 @@ Mandatory argument:
 Optional arguments:
 -s <texture size>
 	(Size) Specify the size (in pixels) of the original textures (default: 16)
--q
-	(Quick) Just pretend to convert 1:1 textures and just print output, but only crop and compose non-1:1 textures.
+-d
+	(Dry) Just pretend to convert 1:1 textures and just print output, but only crop and compose non-1:1 textures.
 -v
 	(Verbose) Print out all copying actions of 1:1 textures.
 -f
@@ -29,7 +28,7 @@ Optional arguments:
 -h
 	(Help) Show this help and exit"""
 try:
-	opts, args = getopt.getopt(sys.argv[1:],"hi:s:qvf")
+	opts, args = getopt.getopt(sys.argv[1:],"hi:s:dvf")
 except getopt.GetoptError:
 	print(
 """ERROR! The options you gave me make no sense!
@@ -41,15 +40,14 @@ for opt, arg in opts:
 	if opt == "-h":
 		print(
 """This is an unofficial MineClone2 Texture Converter.
-This will convert textures from Minecraft resource packs to
-a Minetest texture pack.
+This will convert textures from Minecraft resource packs (or default assets) to a Minetest texture pack.
 
 Supported Minecraft version: 1.20 (Java Edition)
 
 Syntax:""")
 		print(syntax_help)
 		sys.exit()
-	elif opt == "-q":
+	elif opt == "-d":
 		dry_run = True
 	elif opt == "-v":
 		verbose = True
@@ -75,12 +73,11 @@ For the full help, use:
     """+appname+""" -h""")
 	sys.exit(2);
 
-### END OF SETTINGS ###
 
-tex_dir = base_dir + "/assets/minecraft/textures"
+tex_dir = os.path.normpath(base_dir + "/assets/minecraft/textures")
 
 out_name = os.path.basename(base_dir) + '_Converted' #todo use path join
-out_dir = base_dir + '/../' + out_name
+out_dir = os.path.normpath(base_dir + '/../' + out_name)
 
 if os.path.isdir(out_dir):
 	if forceDelete:
@@ -391,7 +388,7 @@ def convert_textures():
 
 
 # ENTRY POINT
-os.mkdir(output_dir+"/"+out_name)
+os.mkdir(out_dir)
 
 convert_textures()
 
@@ -399,4 +396,4 @@ print("\x1b[1;32mFinished Converting Texture Pack\x1b[0m")
 print("\n\x1b[0;33mREMINDER: This is a work-in-progress tool and may misrepresent textures.\x1b[0m")
 print(f"\x1b[0;33mREMINDER: If you see any \x1b[1;36mmissing or misrepresented textures\x1b[0;33m please open an issue on the github (\x1b[0;36mhttps://github.com/Kilometres/Minetest\x1b[0;33m)\x1b[0m")
 if not dry_run:
-	print(f"\nThe texture pack can be retrieved from: \x1b[1;36m{output_dir}/{out_name}/\x1b[0m\n")
+	print(f"\nThe texture pack can be retrieved from: \x1b[1;36m{out_dir}/\x1b[0m\n")
