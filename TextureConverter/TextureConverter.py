@@ -24,7 +24,7 @@ Optional arguments:
 -v
 	(Verbose) Print out all copying actions of 1:1 textures.
 -f
-	(Force) Removes an existing converted pack fold.
+	(Force) Removes the existing converted pack foldfolder.
 -h
 	(Help) Show this help and exit"""
 try:
@@ -63,14 +63,11 @@ Syntax:""")
 
 if base_dir == None:
 	print(
-"""ERROR: You didn't tell me the path to the Minecraft resource pack.
-Mind-reading has not been implemented yet.
+"""\x1b[1;31mERROR: No input path specified\x1b[0m
 
-Try this:
-    """+appname+""" -i <path to resource pack> -p <texture size>
+Try: """+appname+""" \x1b[0;36m-i <path to resource pack>\x1b[0m -p <texture size>
 
-For the full help, use:
-    """+appname+""" -h""")
+For the full help, use: """+appname+""" -h""")
 	sys.exit(2);
 
 
@@ -83,7 +80,7 @@ if os.path.isdir(out_dir):
 	if forceDelete:
 		shutil.rmtree(out_dir)
 	else:
-		print("Folder already exists: "+out_dir+"\nDelete it or use -f")
+		print("\x1b[1;33mFolder already exists at output directory:\x1b[0m "+out_dir+"\nUse the \x1b[1;36m-f\x1b[0m flag to override.")
 		sys.exit(2);
 	
 
@@ -319,7 +316,7 @@ def convert_grass_palettes():
 		if len(color) > 1:
 			os.system("magick convert " + tempfile1.name + ".png ( -size 1x1 xc:\"" + color[1] + "\" ) -compose blend -define compose:args=50,50 -composite " + tempfile1.name + ".png")
 
-		os.system("magick convert " + grass_palette_file + " ( " + tempfile1.name + ".png -geometry +" + str(i % 16) + "+" + str(int(i / 16)) + " ) -composite " + grass_palette_file)
+		os.system("magick convert " + grass_palette_file + " -set colorspace sRGB ( " + tempfile1.name + ".png -geometry +" + str(i % 16) + "+" + str(int(i / 16)) + " ) -composite " + grass_palette_file)
 
 
 def translate_metadata():
@@ -336,6 +333,22 @@ description = {mcmeta['pack']['description']}"""
 	os.system("magick convert -size 300x200 canvas:transparent \""+out_dir + "/screenshot.png\"")
 	os.system("magick composite \""+base_dir+"/pack.png\" \""+out_dir + "/screenshot.png\" -gravity center \""+out_dir + "/screenshot.png\"") #todo: account for res
 
+def convert_signs():
+	os.system("magick convert \""+tex_dir+"/item/oak_sign.png\" -set colorspace Gray   \""+out_dir+"/mcl_signs_default_sign_greyscale.png\"")
+	os.system("magick convert \""+tex_dir+"/entity/signs/oak.png\" -set colorspace Gray   \""+out_dir+"/mcl_signs_sign_greyscale.png\"")
+
+def convert_sign_font():
+	ascii_file = tex_dir+"/font/ascii.png"
+
+	ascii_chars = [
+		[], ["_ex"], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+		["_0"], ["_1"], ["_2"], ["_3"], ["_4"], ["_5"], ["_6"], ["_7"], ["_8"], ["_9"], [], [], [], [], [], [],
+		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+	]
+
 def progress_color(pos, curpos):
 	if pos < curpos:
 		return " ✔ \x1b[0;37m"
@@ -346,14 +359,14 @@ def progress_color(pos, curpos):
 
 def progress_list(position):
 	print(f'''\x1b[10A\x1b[1;32mConverting Texture Pack:\x1b[0m
-{progress_color(0, position)} 1:1 Textures\x1b[0m
-{progress_color(1, position)} Map Textures\x1b[0m
-{progress_color(2, position)} Armor Textures\x1b[0m
-{progress_color(3, position)} Banner Overlay Textures\x1b[0m
-{progress_color(4, position)} Rail Textures\x1b[0m
-{progress_color(5, position)} Foliage Textures\x1b[0m
-{progress_color(6, position)} Palette Textures\x1b[0m
-{progress_color(7, position)} Translating Metadata\x1b[0m
+{progress_color(0, position)} 1:1 Textures\x1b[0m		{progress_color(8, position)} Sign Textures\x1b[0m
+{progress_color(1, position)} Map Textures\x1b[0m		{progress_color(9, position)} Sign Font Textures\x1b[0m
+{progress_color(2, position)} Armor Textures\x1b[0m		
+{progress_color(3, position)} Banner Overlay Textures\x1b[0m	
+{progress_color(4, position)} Rail Textures\x1b[0m		
+{progress_color(5, position)} Foliage Textures\x1b[0m		
+{progress_color(6, position)} Palette Textures\x1b[0m		
+{progress_color(7, position)} Translating Metadata\x1b[0m	
 ''')
 
 def convert_textures():
@@ -379,6 +392,10 @@ def convert_textures():
 	progress_list(7)
 	translate_metadata()
 	progress_list(8)
+	convert_signs()
+	progress_list(9)
+	convert_sign_font()
+	progress_list(10)
 
 	if dry_run:
 		shutil.rmtree(out_dir)
