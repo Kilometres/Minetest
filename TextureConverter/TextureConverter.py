@@ -1,38 +1,35 @@
 #!/usr/bin/env python
 import shutil, csv, os, tempfile, sys, getopt, json
-from rich.progress import Progress as rprog
 
-appname = "Kilos_Texture_Converter.py"
+appname = "TextureConverter.py"
 
 output_dir = os.getcwd()
 base_dir = None
 
 dry_run = False
-
+forceDelete = False
 verbose = False
 
 PXSIZE = 16
 
-syntax_help = appname+""" -i <input dir> [-o <output dir>] [-d] [-v|-q] [-h]
+syntax_help = appname+""" -i <input dir> [-s size] [-q] [-v] [-h] 
 Mandatory argument:
 -i <input directory>
 	Directory of Minecraft resource pack to convert
 
 Optional arguments:
--p <texture size>
-	Specify the size (in pixels) of the original textures (default: 16)
--o <output directory>
-	Directory in which to put the resulting Mineclone2 texture pack
-	(default: working directory)
--d
-	Just pretend to convert textures and just print output, but do not actually
-	change any files.
+-s <texture size>
+	(Size) Specify the size (in pixels) of the original textures (default: 16)
+-q
+	(Quick) Just pretend to convert 1:1 textures and just print output, but only crop and compose non-1:1 textures.
 -v
-	Print out all copying actions
+	(Verbose) Print out all copying actions of 1:1 textures.
+-f
+	(Force) Removes an existing converted pack fold.
 -h
-	Show this help and exit"""
+	(Help) Show this help and exit"""
 try:
-	opts, args = getopt.getopt(sys.argv[1:],"hi:p:dv")
+	opts, args = getopt.getopt(sys.argv[1:],"hi:s:qvf")
 except getopt.GetoptError:
 	print(
 """ERROR! The options you gave me make no sense!
@@ -43,7 +40,7 @@ Here's the syntax reference:""")
 for opt, arg in opts:
 	if opt == "-h":
 		print(
-"""This is an unofficial MineClone 2 Texture Converter modified by Kilo.
+"""This is an unofficial MineClone2 Texture Converter.
 This will convert textures from Minecraft resource packs to
 a Minetest texture pack.
 
@@ -52,16 +49,18 @@ Supported Minecraft version: 1.20 (Java Edition)
 Syntax:""")
 		print(syntax_help)
 		sys.exit()
-	elif opt == "-d":
+	elif opt == "-q":
 		dry_run = True
 	elif opt == "-v":
 		verbose = True
+	elif opt == "-f":
+		forceDelete = True
 	elif opt == "-i":
 		base_dir = arg
 		if arg.find(' ') != -1:
 			print("Spaces not supported in file name, use underscores '_' instead.")
 			sys.exit(2)
-	elif opt == "-p":
+	elif opt == "-s":
 		PXSIZE = int(arg)
 
 if base_dir == None:
@@ -84,29 +83,28 @@ out_name = os.path.basename(base_dir) + '_Converted' #todo use path join
 out_dir = base_dir + '/../' + out_name
 
 if os.path.isdir(out_dir):
-	print("Folder already exists: "+out_dir)
-	sys.exit(2);
+	if forceDelete:
+		shutil.rmtree(out_dir)
+	else:
+		print("Folder already exists: "+out_dir+"\nDelete it or use -f")
+		sys.exit(2);
+	
 
 # FUNCTION DEFINITIONS
 def colorize(colormap, source, colormap_pixel, texture_size, destination):
-	os.system("convert "+colormap+" -crop 1x1+"+colormap_pixel+" -depth 8 -resize "+texture_size+"x"+texture_size+" "+tempfile1.name)
-	os.system("composite -compose Multiply "+tempfile1.name+" "+source+" "+destination)
+	os.system("magick convert "+colormap+" -crop 1x1+"+colormap_pixel+" -depth 8 -resize "+texture_size+"x"+texture_size+" "+tempfile1.name+".png")
+	os.system("magick composite -compose Multiply "+tempfile1.name+".png "+source+" "+destination)
 
 def colorize_alpha(colormap, source, colormap_pixel, texture_size, destination):
-	colorize(colormap, source, colormap_pixel, texture_size, tempfile2.name)
-	os.system("composite -compose Dst_In "+source+" "+tempfile2.name+" -alpha Set "+destination)
+	colorize(colormap, source, colormap_pixel, texture_size, tempfile2.name+".png")
+	os.system("magick composite -compose Dst_In "+source+" "+tempfile2.name+".png -alpha Set "+destination)
 
 def convert_textures_csv():
-	with open("Kilo_Conversion_Table_1.20.csv", newline="") as csvfile, rprog(refresh_per_second=5) as progbar:
+	with open("Kilo_Conversion_Table_1.20.csv", newline="") as csvfile:
 		reader = csv.reader(csvfile, delimiter=",", quotechar='"')
-		row_count = sum(1 for row in reader)
-		csvfile.seek(0)
-
-		progtask = progbar.add_task("[cyan]1:1 Textures", total=row_count)
 
 		first_row = True
 		for row in reader:
-			progbar.update(progtask, advance=1)
 			# Skip first row
 			if first_row:
 				first_row = False
@@ -139,7 +137,7 @@ def convert_textures_csv():
 			if xs != None:
 				# Crop and copy images
 				if not dry_run:
-					os.system("convert "+src_file+" -crop "+xl+"x"+yl+"+"+xs+"+"+ys+" "+dst_file)
+					os.system("magick convert \""+src_file+"\" -crop "+xl+"x"+yl+"+"+xs+"+"+ys+" \""+dst_file+"\"")
 				if verbose:
 					print(src_file + " → " + dst_file)
 			else:
@@ -152,7 +150,7 @@ def convert_textures_csv():
 def convert_map():
 	map_background_file = tex_dir + "/map/map_background.png"
 	if os.path.isfile(map_background_file):
-		os.system("convert " + map_background_file + " -interpolate Integer -filter point -resize \"140x140\" " + out_dir + "/mcl_maps_map_background.png")
+		os.system("convert \"" + map_background_file + "\" -interpolate Integer -filter point -resize \"140x140\" \"" + out_dir + "/mcl_maps_map_background.png\"")
 
 def convert_armor():
 	armor_files = [
@@ -169,15 +167,15 @@ def convert_armor():
 		layer_2 = a[1]
 		adir = a[2]
 		if os.path.isfile(layer_1):
-			helmet = adir + "/" + a[3]
-			chestplate = adir + "/" + a[4]
-			boots = adir + "/" + a[6]
-			os.system("convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none \\( "+layer_1+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +"+str(APXSIZE * 2)+"+0 -crop "+str(APXSIZE * 2)+"x"+str(APXSIZE)+"+0+0 \) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+helmet)
-			os.system("convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none \\( "+layer_1+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +"+str(APXSIZE)+"+"+str(APXSIZE)+" -crop "+str(APXSIZE * 2.5)+"x"+str(APXSIZE)+"+"+str(APXSIZE)+"+"+str(APXSIZE)+" \) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+chestplate)
-			os.system("convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none \\( "+layer_1+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +0+"+str(APXSIZE)+" -crop "+str(APXSIZE)+"x"+str(APXSIZE)+"+0+"+str(APXSIZE)+" \) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+boots)
+			helmet = "\""+adir + "/" + a[3]+"\""
+			chestplate = "\""+adir + "/" + a[4]+"\""
+			boots = "\""+adir + "/" + a[6]+"\""
+			os.system("magick convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none ( "+layer_1+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +"+str(APXSIZE * 2)+"+0 -crop "+str(APXSIZE * 2)+"x"+str(APXSIZE)+"+0+0 ) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+helmet)
+			os.system("magick convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none ( "+layer_1+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +"+str(APXSIZE)+"+"+str(APXSIZE)+" -crop "+str(APXSIZE * 2.5)+"x"+str(APXSIZE)+"+"+str(APXSIZE)+"+"+str(APXSIZE)+" ) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+chestplate)
+			os.system("magick convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none ( "+layer_1+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +0+"+str(APXSIZE)+" -crop "+str(APXSIZE)+"x"+str(APXSIZE)+"+0+"+str(APXSIZE)+" ) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+boots)
 		if os.path.isfile(layer_2):
 			leggings = adir + "/" + a[5]
-			os.system("convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none \\( "+layer_2+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +0+"+str(APXSIZE)+" -crop "+str(APXSIZE * 2.5)+"x"+str(APXSIZE)+"+0+"+str(APXSIZE)+" \) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+leggings)
+			os.system("magick convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none ( "+layer_2+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +0+"+str(APXSIZE)+" -crop "+str(APXSIZE * 2.5)+"x"+str(APXSIZE)+"+0+"+str(APXSIZE)+" ) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+leggings)
 
 def convert_rails():
 	rails = [
@@ -191,9 +189,9 @@ def convert_rails():
 		("activator_rail_on.png", "rail_corner.png", "mcl_minecarts_rail_activator_d_t_junction.png", "mcl_minecarts_rail_activator_powered_crossing.png"),
 	]
 	for r in rails:
-		os.system("composite -compose Dst_Over "+tex_dir+"/block/"+r[0]+" "+tex_dir+"/block/"+r[1]+" "+out_dir+"/"+r[2])
-		os.system("convert "+tex_dir+"/block/"+r[0]+" -rotate 90 "+tempfile1.name)
-		os.system("composite -compose Dst_Over "+tempfile1.name+" "+tex_dir+"/block/"+r[0]+" "+out_dir+"/"+r[3])
+		os.system("magick composite -compose dst-over "+tex_dir+"/block/"+r[0]+" "+tex_dir+"/block/"+r[1]+" "+out_dir+"/"+r[2])
+		os.system("magick convert "+tex_dir+"/block/"+r[0]+" -rotate 90 "+tempfile1.name+".png")
+		os.system("magick composite -compose dst-over "+tempfile1.name+".png "+tex_dir+"/block/"+r[0]+" "+out_dir+"/"+r[3])
 
 def convert_banner_overlays():
 	overlays = [
@@ -243,7 +241,7 @@ def convert_banner_overlays():
 			if o == "mojang":
 				o = "thing"
 			dest = out_dir+"/"+"mcl_banners_"+o+".png"
-			os.system("convert "+orig+" -transparent-color white -background black -alpha remove -alpha copy -channel RGB -white-threshold 0 "+dest)
+			os.system("magick convert "+orig+" -transparent-color white -background black -alpha remove -alpha copy -channel RGB -white-threshold 0 "+dest)
 
 def convert_foliage():
 	FOLIAGE = tex_dir+"/colormap/foliage.png"
@@ -272,7 +270,7 @@ def convert_foliage():
 	colorize_alpha(GRASS, tex_dir+"/block/large_fern_bottom.png", pcol, str(PXSIZE), out_dir+"/mcl_flowers_double_plant_grass_inv.png")
 
 
-	os.system(f"convert -size 16x16 xc:transparent {out_dir}/mcl_dirt_grass_shadow.png")
+	os.system(f"magick convert -size 16x16 xc:transparent {out_dir}/mcl_dirt_grass_shadow.png")
 
 def convert_grass_palettes():
 	GRASS = tex_dir+"/colormap/grass.png"
@@ -317,14 +315,14 @@ def convert_grass_palettes():
 
 	for i, color in enumerate(grass_colors):
 		if color[0][0] == "#":
-			os.system("convert -size 1x1 xc:\"" + color[0] + "\" " + tempfile1.name + ".png")
+			os.system("magick convert -size 1x1 xc:\"" + color[0] + "\" " + tempfile1.name + ".png")
 		else:
-			os.system("convert " + GRASS + " -crop 1x1+" + color[0] + " " + tempfile1.name + ".png")
+			os.system("magick convert " + GRASS + " -crop 1x1+" + color[0] + " " + tempfile1.name + ".png")
 
 		if len(color) > 1:
-			os.system("convert " + tempfile1.name + ".png \\( -size 1x1 xc:\"" + color[1] + "\" \\) -compose blend -define compose:args=50,50 -composite " + tempfile1.name + ".png")
+			os.system("magick convert " + tempfile1.name + ".png ( -size 1x1 xc:\"" + color[1] + "\" ) -compose blend -define compose:args=50,50 -composite " + tempfile1.name + ".png")
 
-		os.system("convert " + grass_palette_file + " \\( " + tempfile1.name + ".png -geometry +" + str(i % 16) + "+" + str(int(i / 16)) + " \\) -composite " + grass_palette_file)
+		os.system("magick convert " + grass_palette_file + " ( " + tempfile1.name + ".png -geometry +" + str(i % 16) + "+" + str(int(i / 16)) + " ) -composite " + grass_palette_file)
 
 
 def translate_metadata():
@@ -338,32 +336,55 @@ description = {mcmeta['pack']['description']}"""
 	meta_file.write(meta)
 	meta_file.close()
 
-	os.system("convert -size 300x200 canvas:transparent "+out_dir + "/screenshot.png")
-	os.system("composite "+base_dir+"/pack.png "+out_dir + "/screenshot.png -gravity center "+out_dir + "/screenshot.png") #todo: account for res
+	os.system("magick convert -size 300x200 canvas:transparent \""+out_dir + "/screenshot.png\"")
+	os.system("magick composite \""+base_dir+"/pack.png\" \""+out_dir + "/screenshot.png\" -gravity center \""+out_dir + "/screenshot.png\"") #todo: account for res
 
+def progress_color(pos, curpos):
+	if pos < curpos:
+		return " ✔ \x1b[0;37m"
+	elif pos == curpos:
+		return " ⚙ \x1b[1;37m"
+	else:
+		return " - \x1b[2;37m"
+
+def progress_list(position):
+	print(f'''\x1b[10A\x1b[1;32mConverting Texture Pack:\x1b[0m
+{progress_color(0, position)} 1:1 Textures\x1b[0m
+{progress_color(1, position)} Map Textures\x1b[0m
+{progress_color(2, position)} Armor Textures\x1b[0m
+{progress_color(3, position)} Banner Overlay Textures\x1b[0m
+{progress_color(4, position)} Rail Textures\x1b[0m
+{progress_color(5, position)} Foliage Textures\x1b[0m
+{progress_color(6, position)} Palette Textures\x1b[0m
+{progress_color(7, position)} Translating Metadata\x1b[0m
+''')
 
 def convert_textures():
 	global tempfile1, tempfile2
 	tempfile1 = tempfile.NamedTemporaryFile()
 	tempfile2 = tempfile.NamedTemporaryFile()
 	
+	print("\n\n\n\n\n\n\n\n\n\n")
+	progress_list(0)
 	convert_textures_csv()
-	with rprog(refresh_per_second=2) as progbar:
-		progtask = progbar.add_task("[cyan]Cropped & Composited Textures", total=125)
-		convert_map()
-		progbar.update(progtask, advance=1)
-		convert_armor()
-		progbar.update(progtask, advance=14)
-		convert_banner_overlays()
-		progbar.update(progtask, advance=24)
-		convert_rails()
-		progbar.update(progtask, advance=39)
-		convert_foliage()
-		progbar.update(progtask, advance=13)
-		convert_grass_palettes()
-		progbar.update(progtask, advance=31)
-		translate_metadata()
-		progbar.update(progtask, advance=3)
+	progress_list(1)
+	convert_map()
+	progress_list(2)
+	convert_armor()
+	progress_list(3)
+	convert_banner_overlays()
+	progress_list(4)
+	convert_rails()
+	progress_list(5)
+	convert_foliage()
+	progress_list(6)
+	convert_grass_palettes()
+	progress_list(7)
+	translate_metadata()
+	progress_list(8)
+
+	if dry_run:
+		shutil.rmtree(out_dir)
 	
 	tempfile1.close()
 	tempfile2.close()
@@ -374,7 +395,8 @@ os.mkdir(output_dir+"/"+out_name)
 
 convert_textures()
 
-print("\n\x1b[1;32mFinished Converting Texture Pack\x1b[0m")
-print("\n\x1b[0;33mREMINDER: This tool is far from perfect and may misrepresent textures.\x1b[0m")
-print(f"\x1b[0;33mREMINDER: If you see any \x1b[1;36mmissing or misrepresented textures\x1b[0;33m please open an issue on the github (https://github.com/Kilometres/Minetest-Tools)")
-print(f"\nYou can now retrieve the texture pack in \x1b[1;36m{output_dir}/{out_name}/\x1b[0m\n")
+print("\x1b[1;32mFinished Converting Texture Pack\x1b[0m")
+print("\n\x1b[0;33mREMINDER: This is a work-in-progress tool and may misrepresent textures.\x1b[0m")
+print(f"\x1b[0;33mREMINDER: If you see any \x1b[1;36mmissing or misrepresented textures\x1b[0;33m please open an issue on the github (\x1b[0;36mhttps://github.com/Kilometres/Minetest\x1b[0;33m)\x1b[0m")
+if not dry_run:
+	print(f"\nThe texture pack can be retrieved from: \x1b[1;36m{output_dir}/{out_name}/\x1b[0m\n")
