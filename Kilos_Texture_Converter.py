@@ -1,45 +1,14 @@
 #!/usr/bin/env python
-
-'''Double chests
-Chest tops textures are backwards
-Grass blocks have a line on the side of them
-leather armor item and entity: is white, missing brown bits
-particles
-villagers and zombie villagers (default + proffessions)
-chest boats
-any ui or hud (e.g. hot bar & health icons)
-anything not in minecraft (e.g. obsidian boat)
-sides of doors and trap doors
-repeators and comparators
-parts of the wood stuff (some signs)
-some leaves
-grind stone is a bit fucky
-glass
-fire is stack and squashed multiple into one
-
-
-look at models
-i3 support
-
-readme:
-how to install, how to use
-'''
-
 import shutil, csv, os, tempfile, sys, getopt, json
+from rich.progress import Progress as rprog
 
-# Helper vars
-working_dir = os.getcwd()
 appname = "Kilos_Texture_Converter.py"
 
-### SETTINGS ###
-output_dir = working_dir
-
+output_dir = os.getcwd()
 base_dir = None
 
-# If True, will only make console output but not convert anything.
 dry_run = False
 
-# If True, prints all copying actions
 verbose = False
 
 PXSIZE = 16
@@ -127,14 +96,17 @@ def colorize_alpha(colormap, source, colormap_pixel, texture_size, destination):
 	colorize(colormap, source, colormap_pixel, texture_size, tempfile2.name)
 	os.system("composite -compose Dst_In "+source+" "+tempfile2.name+" -alpha Set "+destination)
 
-# Copy texture files
-def convert_textures():
-	failed_conversions = 0
-	print("Texture conversion BEGINS NOW!")
-	with open("Kilo_Conversion_Table_1.20.csv", newline="") as csvfile:
+def convert_textures_csv():
+	with open("Kilo_Conversion_Table_1.20.csv", newline="") as csvfile, rprog(refresh_per_second=5) as progbar:
 		reader = csv.reader(csvfile, delimiter=",", quotechar='"')
+		row_count = sum(1 for row in reader)
+		csvfile.seek(0)
+
+		progtask = progbar.add_task("[cyan]1:1 Textures", total=row_count)
+
 		first_row = True
 		for row in reader:
+			progbar.update(progtask, advance=1)
 			# Skip first row
 			if first_row:
 				first_row = False
@@ -148,11 +120,9 @@ def convert_textures():
 				ys = row[4]
 				xl = row[5]
 				yl = row[6]
-				xt = row[7]
-				yt = row[8]
 			else:
 				xs = None
-			blacklisted = row[9]
+			blacklisted = row[7]
 
 			if blacklisted == "y":
 				# Skip blacklisted files
@@ -163,8 +133,7 @@ def convert_textures():
 			dst_file = out_dir + "/" + dst_filename # destination file
 
 			if src_file_exists == False:
-				print("WARNING: Source file does not exist: "+src_file)
-				failed_conversions = failed_conversions + 1
+				print(f"\x1b[1;33mWARNING: Source file does not exist: {src_file}\x1b[0m")
 				continue
 
 			if xs != None:
@@ -180,12 +149,12 @@ def convert_textures():
 				if verbose:
 					print(src_file + " → " + dst_file)
 
-	# Convert map background
+def convert_map():
 	map_background_file = tex_dir + "/map/map_background.png"
 	if os.path.isfile(map_background_file):
 		os.system("convert " + map_background_file + " -interpolate Integer -filter point -resize \"140x140\" " + out_dir + "/mcl_maps_map_background.png")
 
-	# Convert armor textures (requires ImageMagick)
+def convert_armor():
 	armor_files = [
 		[ tex_dir + "/models/armor/leather_layer_1.png", tex_dir + "/models/armor/leather_layer_2.png", out_dir, "mcl_armor_helmet_leather.png", "mcl_armor_chestplate_leather.png", "mcl_armor_leggings_leather.png", "mcl_armor_boots_leather.png" ],
 		[ tex_dir + "/models/armor/chainmail_layer_1.png", tex_dir + "/models/armor/chainmail_layer_2.png", out_dir, "mcl_armor_helmet_chain.png", "mcl_armor_chestplate_chain.png", "mcl_armor_leggings_chain.png", "mcl_armor_boots_chain.png" ],
@@ -210,9 +179,7 @@ def convert_textures():
 			leggings = adir + "/" + a[5]
 			os.system("convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none \\( "+layer_2+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +0+"+str(APXSIZE)+" -crop "+str(APXSIZE * 2.5)+"x"+str(APXSIZE)+"+0+"+str(APXSIZE)+" \) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+leggings)
 
-
-	# Generate railway crossings and t-junctions. Note: They may look strange.
-	# Note: these may be only a temporary solution, as crossings and t-junctions do not occour in MC.
+def convert_rails():
 	rails = [
 		# (Straigt src, curved src, t-junction dest, crossing dest)
 		("rail.png", "rail_corner.png", "default_rail_t_junction.png", "default_rail_crossing.png"),
@@ -228,7 +195,7 @@ def convert_textures():
 		os.system("convert "+tex_dir+"/block/"+r[0]+" -rotate 90 "+tempfile1.name)
 		os.system("composite -compose Dst_Over "+tempfile1.name+" "+tex_dir+"/block/"+r[0]+" "+out_dir+"/"+r[3])
 
-	# Convert banner overlays
+def convert_banner_overlays():
 	overlays = [
 		"base",
 		"border",
@@ -278,24 +245,24 @@ def convert_textures():
 			dest = out_dir+"/"+"mcl_banners_"+o+".png"
 			os.system("convert "+orig+" -transparent-color white -background black -alpha remove -alpha copy -channel RGB -white-threshold 0 "+dest)
 
-	# Convert grass
-	FOLIAG = tex_dir+"/colormap/foliage.png"
+def convert_foliage():
+	FOLIAGE = tex_dir+"/colormap/foliage.png"
 	GRASS = tex_dir+"/colormap/grass.png"
 
 
 	# Leaves
-	colorize_alpha(FOLIAG, tex_dir+"/block/oak_leaves.png", "116+143", str(PXSIZE), out_dir+"/default_leaves.png")
-	colorize_alpha(FOLIAG, tex_dir+"/block/dark_oak_leaves.png", "158+177", str(PXSIZE), out_dir+"/mcl_core_leaves_big_oak.png")
-	colorize_alpha(FOLIAG, tex_dir+"/block/acacia_leaves.png", "40+255", str(PXSIZE), out_dir+"/default_acacia_leaves.png")
-	colorize_alpha(FOLIAG, tex_dir+"/block/spruce_leaves.png", "226+230", str(PXSIZE), out_dir+"/mcl_core_leaves_spruce.png")
-	colorize_alpha(FOLIAG, tex_dir+"/block/birch_leaves.png", "141+186", str(PXSIZE), out_dir+"/mcl_core_leaves_birch.png")
-	colorize_alpha(FOLIAG, tex_dir+"/block/jungle_leaves.png", "16+39", str(PXSIZE), out_dir+"/default_jungleleaves.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/oak_leaves.png", "116+143", str(PXSIZE), out_dir+"/default_leaves.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/dark_oak_leaves.png", "158+177", str(PXSIZE), out_dir+"/mcl_core_leaves_big_oak.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/acacia_leaves.png", "40+255", str(PXSIZE), out_dir+"/default_acacia_leaves.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/spruce_leaves.png", "226+230", str(PXSIZE), out_dir+"/mcl_core_leaves_spruce.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/birch_leaves.png", "141+186", str(PXSIZE), out_dir+"/mcl_core_leaves_birch.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/jungle_leaves.png", "16+39", str(PXSIZE), out_dir+"/default_jungleleaves.png")
 
 	# Waterlily
-	colorize_alpha(FOLIAG, tex_dir+"/block/lily_pad.png", "16+39", str(PXSIZE), out_dir+"/flowers_waterlily.png") #todo mcl text no longer exists
+	colorize_alpha(FOLIAGE, tex_dir+"/block/lily_pad.png", "16+39", str(PXSIZE), out_dir+"/flowers_waterlily.png") #todo mcl text no longer exists
 
 	# Vines
-	colorize_alpha(FOLIAG, tex_dir+"/block/vine.png", "16+39", str(PXSIZE), out_dir+"/mcl_core_vine.png")
+	colorize_alpha(FOLIAGE, tex_dir+"/block/vine.png", "16+39", str(PXSIZE), out_dir+"/mcl_core_vine.png")
 
 	# Tall grass, fern (inventory images)
 	pcol = "50+173" # Plains grass color
@@ -306,6 +273,9 @@ def convert_textures():
 
 
 	os.system(f"convert -size 16x16 xc:transparent {out_dir}/mcl_dirt_grass_shadow.png")
+
+def convert_grass_palettes():
+	GRASS = tex_dir+"/colormap/grass.png"
 
 	# Convert grass palette: https://minecraft.fandom.com/wiki/Tint
 	grass_colors = [
@@ -356,6 +326,8 @@ def convert_textures():
 
 		os.system("convert " + grass_palette_file + " \\( " + tempfile1.name + ".png -geometry +" + str(i % 16) + "+" + str(int(i / 16)) + " \\) -composite " + grass_palette_file)
 
+
+def translate_metadata():
 	with open(base_dir+'/pack.mcmeta') as json_file:
 		mcmeta = json.load(json_file)
 
@@ -367,23 +339,42 @@ description = {mcmeta['pack']['description']}"""
 	meta_file.close()
 
 	os.system("convert -size 300x200 canvas:transparent "+out_dir + "/screenshot.png")
-	os.system("composite "+base_dir+"/pack.png "+out_dir + "/screenshot.png -gravity center "+out_dir + "/screenshot.png")
+	os.system("composite "+base_dir+"/pack.png "+out_dir + "/screenshot.png -gravity center "+out_dir + "/screenshot.png") #todo: account for res
 
 
-	print("\nTextures conversion COMPLETE!")
-	if failed_conversions > 0:
-		print("\nWARNING: Number of missing files in original resource pack: "+str(failed_conversions))
-	print("\nNOTE: Please keep in mind this script does not reliably convert all the textures yet.")
-	print("You can now retrieve the texture pack in "+output_dir+"/"+out_name+"/")
+def convert_textures():
+	global tempfile1, tempfile2
+	tempfile1 = tempfile.NamedTemporaryFile()
+	tempfile2 = tempfile.NamedTemporaryFile()
+	
+	convert_textures_csv()
+	with rprog(refresh_per_second=2) as progbar:
+		progtask = progbar.add_task("[cyan]Cropped & Composited Textures", total=125)
+		convert_map()
+		progbar.update(progtask, advance=1)
+		convert_armor()
+		progbar.update(progtask, advance=14)
+		convert_banner_overlays()
+		progbar.update(progtask, advance=24)
+		convert_rails()
+		progbar.update(progtask, advance=39)
+		convert_foliage()
+		progbar.update(progtask, advance=13)
+		convert_grass_palettes()
+		progbar.update(progtask, advance=31)
+		translate_metadata()
+		progbar.update(progtask, advance=3)
+	
+	tempfile1.close()
+	tempfile2.close()
+
 
 # ENTRY POINT
-if not os.path.isdir(output_dir+"/"+out_name):
-	os.mkdir(output_dir+"/"+out_name)
-
-tempfile1 = tempfile.NamedTemporaryFile()
-tempfile2 = tempfile.NamedTemporaryFile()
+os.mkdir(output_dir+"/"+out_name)
 
 convert_textures()
 
-tempfile1.close()
-tempfile2.close()
+print("\n\x1b[1;32mFinished Converting Texture Pack\x1b[0m")
+print("\n\x1b[0;33mREMINDER: This tool is far from perfect and may misrepresent textures.\x1b[0m")
+print(f"\x1b[0;33mREMINDER: If you see any \x1b[1;36mmissing or misrepresented textures\x1b[0;33m please open an issue on the github (https://github.com/Kilometres/Minetest-Tools)")
+print(f"\nYou can now retrieve the texture pack in \x1b[1;36m{output_dir}/{out_name}/\x1b[0m\n")
