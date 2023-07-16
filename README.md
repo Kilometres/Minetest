@@ -1,6 +1,6 @@
-# Minetest Tools & Mods
+<h1 align="center"> Minetest Tools & Mods </h1>
+
 A compilation of my [minetest](https://github.com/minetest/minetest) and [mineclone2](https://git.minetest.land/MineClone2/MineClone2) tools, guides and mods.
-## Contents
 ### Tools
  - [Texture Pack Converter](#t-minecraft-to-minetestmineclone2-texture-pack-converter)
  - Minecraft Font Installer for Minetest
@@ -14,7 +14,7 @@ This is an unofficial MineClone2 Texture Converter. This will convert textures f
 Supported Minecraft version: `1.20 (Java Edition)`
 ### Requirements
 - Python 3.x
-- Imagemagick (use of the `magick` command)
+- [Imagemagick](https://imagemagick.org/script/download.php#windows) (use of the `magick` command)
 <br><br>
 
 ### Usage
