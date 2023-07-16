@@ -1,4 +1,4 @@
-Source path,Source file,Target file,xs,ys,xl,yl,Blacklisted?
+Source path,Source file,Target file,xs,ys,xl,yl,Blacklist
 /assets/minecraft/textures/gui,icons.png,hbarmor_icon.png,34,9,9,9,
 /assets/minecraft/textures/gui,icons.png,hbarmor_bgicon.png,16,9,9,9,
 /assets/minecraft/textures/gui,icons.png,hudbars_icon_health.png,52,0,9,9,
@@ -1438,3 +1438,14 @@ Source path,Source file,Target file,xs,ys,xl,yl,Blacklisted?
 /assets/minecraft/textures/item,spawn_egg.png,spawn_egg.png,,,,,
 /assets/minecraft/textures/item,spawn_egg_overlay.png,spawn_egg_overlay.png,,,,,
 /assets/minecraft/textures/item,suspicious_stew.png,sus_stew.png,,,,,
+/assets/minecraft/textures/entity/signs,dark_oak.png,mcl_signs_sign_dark.png,,,,,
+/assets/minecraft/textures/item,dark_oak_sign.png,mcl_signs_default_sign_dark.png,,,,,
+/assets/minecraft/textures/entity/signs,oak.png,mcl_signs_sign.png,,,,,
+/assets/minecraft/textures/item,oak_sign.png,mcl_signs_default_sign.png,,,,,
+/assets/minecraft/textures/block,warped_planks.png,mcl_crimson_warped_hyphae_wood.png,,,,,
+/assets/minecraft/textures/block,warped_planks.png,mcl_crimson_warped_hyphae_wood_2nd.png,,,,,
+/assets/minecraft/textures/block,crimson_planks.png,mcl_crimson_crimson_hyphae_wood.png,,,,,
+/assets/minecraft/textures/block,crimson_stem.png,mcl_crimson_crimson_hyphae_side.png,0,0,16,16,
+/assets/minecraft/textures/block,warped_stem.png,mcl_crimson_warped_hyphae_side.png,0,0,16,16,
+/assets/minecraft/textures/block,crimson_stem_top.png,mcl_crimson_crimson_hyphae.png,,,,,
+/assets/minecraft/textures/block,warped_stem_top.png,mcl_crimson_warped_hyphae.png,,,,,
