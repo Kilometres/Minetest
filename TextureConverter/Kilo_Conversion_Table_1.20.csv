@@ -728,7 +728,7 @@ Source path,Source file,Target file,x1,y1,x2,y2,Blacklist
 /assets/minecraft/textures/entity/wolf,wolf.png,mobs_mc_wolf.png,,,,,
 /assets/minecraft/textures/entity/wolf,wolf_tame.png,mobs_mc_wolf_tame.png,,,,,
 /assets/minecraft/textures/entity/zombie_villager,zombie_villager.png,mobs_mc_zombie_villager.png,,,,,y
-/assets/minecraft/textures/entity/zombie,zombie.png,mobs_mc_zombie.png,,,,,y
+/assets/minecraft/textures/entity/zombie,zombie.png,mobs_mc_zombie.png,,,,,
 /assets/minecraft/textures/item,flower_pot.png,mcl_flowerpots_flowerpot_inventory.png,,,,,
 /assets/minecraft/textures/block,flower_pot.png,mcl_flowerpots_flowerpot.png,,,,,y
 /assets/minecraft/textures/gui,widgets.png,mcl_inventory_hotbar.png,0,0,182,22,
@@ -1442,3 +1442,4 @@ Source path,Source file,Target file,x1,y1,x2,y2,Blacklist
 /assets/minecraft/textures/block,warped_stem.png,mcl_crimson_warped_hyphae_side.png,,,,,
 /assets/minecraft/textures/block,crimson_stem_top.png,mcl_crimson_crimson_hyphae.png,,,,,
 /assets/minecraft/textures/block,warped_stem_top.png,mcl_crimson_warped_hyphae.png,,,,,
+/assets/minecraft/textures/block,cherry_leaves.png,mcl_cherry_blossom_leaves.png,,,,,
