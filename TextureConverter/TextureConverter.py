@@ -252,7 +252,7 @@ def convert_foliage():
 	colorize_alpha(FOLIAGE, tex_dir+"/block/mangrove_leaves.png", "90+234", str(PXSIZE), out_dir+"/mcl_mangrove_leaves.png")
 
 	# Waterlily
-	colorize_alpha(FOLIAGE, tex_dir+"/block/lily_pad.png", "16+39", str(PXSIZE), out_dir+"/flowers_waterlily.png") #todo mcl text no longer exists
+	#colorize_alpha(FOLIAGE, tex_dir+"/block/lily_pad.png", "16+39", str(PXSIZE), out_dir+"/flowers_waterlily.png") #todo mcl text no longer exists
 
 	# Vines
 	colorize_alpha(FOLIAGE, tex_dir+"/block/vine.png", "16+39", str(PXSIZE), out_dir+"/mcl_core_vine.png")
@@ -306,7 +306,7 @@ def convert_grass_palettes():
 	]
 
 	grass_palette_file = out_dir + "/mcl_core_palette_grass.png"
-	os.system("convert -size 16x16 canvas:transparent " + grass_palette_file)
+	os.system("magick convert -size 16x16 canvas:transparent " + grass_palette_file)
 
 	for i, color in enumerate(grass_colors):
 		if color[0][0] == "#":
@@ -410,6 +410,10 @@ def convert_hud():
 
 	os.system(f"magick convert \"{icons_file}\" -crop 16x16+0x0 -scale 300% \"{out_dir}/crosshair.png\"")
 
+
+def patch_chests():
+	progress_color(1, 1)
+
 def progress_color(pos, curpos):
 	if pos < curpos:
 		return " ✔ \x1b[0;37m"
@@ -423,7 +427,7 @@ def progress_list(position):
 {progress_color(0, position)} 1:1 Textures\x1b[0m		{progress_color(8, position)} Sign Textures\x1b[0m
 {progress_color(1, position)} Map Textures\x1b[0m		{progress_color(9, position)} Sign Font Textures\x1b[0m
 {progress_color(2, position)} Armor Textures\x1b[0m		{progress_color(10, position)} Hud Textures\x1b[0m
-{progress_color(3, position)} Banner Overlay Textures\x1b[0m	
+{progress_color(3, position)} Banner Overlay Textures\x1b[0m	{progress_color(11, position)} Patch Chest Textures\x1b[0m
 {progress_color(4, position)} Rail Textures\x1b[0m		
 {progress_color(5, position)} Foliage Textures\x1b[0m		
 {progress_color(6, position)} Palette Textures\x1b[0m		
@@ -459,6 +463,8 @@ def convert_textures():
 	progress_list(10)
 	convert_hud()
 	progress_list(11)
+	patch_chests()
+	progress_list(12)
 
 	if dry_run:
 		shutil.rmtree(out_dir)
