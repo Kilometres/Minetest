@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import shutil, csv, os, tempfile, sys, getopt, json
-
+from math import floor
 appname = "TextureConverter.py"
 
 base_dir = None
@@ -341,13 +341,35 @@ def convert_sign_font():
 	ascii_file = tex_dir+"/font/ascii.png"
 
 	ascii_chars = [
-		[], ["_ex"], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-		["_0"], ["_1"], ["_2"], ["_3"], ["_4"], ["_5"], ["_6"], ["_7"], ["_8"], ["_9"], [], [], [], [], [], [],
-		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-		[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+		       1    , 2    , "_hs", "_dl", "_pr", "_am", 3    , 4    , 5    , 6    , "_ps", 7    , "_mn", 8    , "_dv",
+		"_0" , "_1" , "_2" , "_3" , "_4" , "_5" , "_6" , "_7" , "_8" , "_9" , 9    , 10   , "_lt", "_eq", "_gt", "_qu",
+		"_at", "_a_", "_b_", "_c_", "_d_", "_e_", "_f_", "_g_", "_h_", 11   , "_j_", "_k_", "_l_", "_m_", "_n_", "_o_",
+		"_p_", "_q_", "_r_", "_s_", "_t_", "_u_", "_v_", "_w_", "_x_", "_y_", "_z_", 12   , "_re", 13   , "_ca", "_un",
+		14   , "_a" , "_b" , "_c" , "_d" , "_e" , 15 , "_g" , "_h" , 16   , "_j" , "_k" , 17   , "_m" , "_n" , "_o" ,
+		"_p" , "_q" , "_r" , "_s" , 17 , "_u" , "_v" , "_w" , "_x" , "_y" , "_z" , 18   , 19   , 20   , 21
 	]
+	ascii_nonuniform_chars = [
+		["_ex", 1], ["_qo", 3], ["_ap", 1], ["_bl", 3], ["_br", 3], ["_as", 3], ["_cm", 1], ["_dt", 1],
+		["_co", 1], ["_sm", 1],
+		["_i_", 3],
+		["_sl", 3], ["_sr", 3],
+		["_gr", 2], ["_f", 4], ["_i", 1], ["_l", 2],
+		["_t", 3], ["_cl", 3], ["_vb", 1], ["_cr", 3], ["_tl", 6],
+	]
+
+	for i in range(len(ascii_chars)):
+		char = ascii_chars[i]
+		width = "5"
+		filename = char
+		if type(char) == int:
+			width = str(ascii_nonuniform_chars[char-1][1])
+			filename = ascii_nonuniform_chars[char-1][0]
+		filename += ".png"
+		sprite = i+1
+		texturex = str( (sprite%16)*8 )
+		texturey = str( floor(sprite/16)*8 + 16 )
+		os.system("magick convert \""+ascii_file+"\" -crop "+width+"x8"+"+"+texturex+"+"+texturey+" \""+out_dir+"/"+filename+"\"")
+
 
 def progress_color(pos, curpos):
 	if pos < curpos:
