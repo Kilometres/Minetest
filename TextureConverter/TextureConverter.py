@@ -371,10 +371,43 @@ def convert_sign_font():
 		if int(width) < 5:
 			os.system("magick convert -size 5x8 canvas:transparent \""+out_dir + "/"+filename+"\"")
 			os.system("magick convert \""+ascii_file+"\" -crop "+width+"x8"+"+"+texturex+"+"+texturey+" \""+tempfile1.name+".png\"")
-			os.system("magick composite \""+tempfile1.name+".png\" \""+out_dir + "/"+filename+"\" -gravity center \""+out_dir + "/"+filename+"\"") #todo: account for res
+			os.system("magick composite \""+tempfile1.name+".png\" \""+out_dir + "/"+filename+"\" -gravity center \""+out_dir + "/"+filename+"\"")
 		else:
 			os.system("magick convert \""+ascii_file+"\" -crop "+width+"x8"+"+"+texturex+"+"+texturey+" \""+out_dir+"/"+filename+"\"")
 
+def convert_hud():
+	icons_file = tex_dir+"/gui/icons.png"
+
+	hud_icons = [
+		[
+			["hbarmor_bgicon.png", 16, 9, 9, 9],
+			["hbarmor_icon.png", 34, 9, 9, 9]
+		],
+		[
+			["hudbars_bgicon_health.png", 16, 0, 9, 9],
+			["hudbars_icon_health.png", 52, 0, 9, 9],
+			["hbhunger_icon_health_poison.png", 88, 0, 9, 9]
+		],
+		[
+			["hbhunger_bgicon.png", 16, 27, 9, 9],
+			["hbhunger_icon.png", 52, 27, 9, 9],
+			["mcl_hunger_icon_foodpoison.png", 88, 27, 9, 9]
+		]
+	]
+
+	for icon_set in hud_icons:
+		bg = icon_set[0]
+		os.system(f"magick convert \"{icons_file}\" -crop {bg[3]}x{bg[4]}+{bg[1]}+{bg[2]} \"{out_dir}/{bg[0]}\"")
+
+		for i in range (1, len(icon_set)):
+			icon = icon_set[i]
+			os.system(f"magick convert \"{icons_file}\" -crop {icon[3]}x{icon[4]}+{icon[1]}+{icon[2]} \"{out_dir}/{icon[0]}\"")
+			os.system(f"magick composite -compose dst-over \"{out_dir}/{bg[0]}\" \"{out_dir}/{icon[0]}\" \"{out_dir}/{icon[0]}\"")
+	
+	os.system(f"magick convert \"{icons_file}\" -crop 182x5+0+64 -rotate 90 \"{out_dir}/mcl_experience_bar_background.png\"")
+	os.system(f"magick convert \"{icons_file}\" -crop 182x5+0+69 -rotate 90 \"{out_dir}/mcl_experience_bar.png\"")
+
+	os.system(f"magick convert \"{icons_file}\" -crop 16x16+0x0 -scale 300% \"{out_dir}/crosshair.png\"")
 
 def progress_color(pos, curpos):
 	if pos < curpos:
@@ -388,7 +421,7 @@ def progress_list(position):
 	print(f'''\x1b[10A\x1b[1;32mConverting Texture Pack:\x1b[0m
 {progress_color(0, position)} 1:1 Textures\x1b[0m		{progress_color(8, position)} Sign Textures\x1b[0m
 {progress_color(1, position)} Map Textures\x1b[0m		{progress_color(9, position)} Sign Font Textures\x1b[0m
-{progress_color(2, position)} Armor Textures\x1b[0m		
+{progress_color(2, position)} Armor Textures\x1b[0m		{progress_color(10, position)} Hud Textures\x1b[0m
 {progress_color(3, position)} Banner Overlay Textures\x1b[0m	
 {progress_color(4, position)} Rail Textures\x1b[0m		
 {progress_color(5, position)} Foliage Textures\x1b[0m		
@@ -423,6 +456,8 @@ def convert_textures():
 	progress_list(9)
 	convert_sign_font()
 	progress_list(10)
+	convert_hud()
+	progress_list(11)
 
 	if dry_run:
 		shutil.rmtree(out_dir)

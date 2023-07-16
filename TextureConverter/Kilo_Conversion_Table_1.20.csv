@@ -1,9 +1,5 @@
-Source path,Source file,Target file,xs,ys,xl,yl,Blacklist
-/assets/minecraft/textures/gui,icons.png,hbarmor_icon.png,34,9,9,9,
-/assets/minecraft/textures/gui,icons.png,hbarmor_bgicon.png,16,9,9,9,
-/assets/minecraft/textures/gui,icons.png,hudbars_icon_health.png,52,0,9,9,
-/assets/minecraft/textures/gui,icons.png,hudbars_bgicon_health.png,16,0,9,9,
-/assets/minecraft/textures/gui,icons.png,hudbars_icon_breath.png,16,18,9,9,
+Source path,Source file,Target file,x1,y1,x2,y2,Blacklist
+/assets/minecraft/textures/gui,icons.png,crosshair.png,0,0,16,16,
 /assets/minecraft/textures/gui,icons.png,heart.png,52,0,9,9,
 /assets/minecraft/textures/gui,icons.png,bubble.png,16,18,9,9,
 /assets/minecraft/textures/item,bucket.png,bucket.png,,,,,
@@ -731,15 +727,12 @@ Source path,Source file,Target file,xs,ys,xl,yl,Blacklist
 /assets/minecraft/textures/entity/wolf,wolf_collar.png,mobs_mc_wolf_collar.png,,,,,
 /assets/minecraft/textures/entity/wolf,wolf.png,mobs_mc_wolf.png,,,,,
 /assets/minecraft/textures/entity/wolf,wolf_tame.png,mobs_mc_wolf_tame.png,,,,,
-/assets/minecraft/textures/entity/zombie_villager,zombie_villager.png,mobs_mc_zombie_villager.png,,,,,
-/assets/minecraft/textures/entity/zombie,zombie.png,mobs_mc_zombie.png,,,,,
-/assets/minecraft/textures/gui,icons.png,hbhunger_bgicon.png,16,27,9,9,
-/assets/minecraft/textures/gui,icons.png,hbhunger_icon_health_poison.png,88,0,9,9,
-/assets/minecraft/textures/gui,icons.png,hbhunger_icon.png,52,27,9,9,
-/assets/minecraft/textures/gui,icons.png,mcl_hunger_icon_foodpoison.png,88,27,9,9,
+/assets/minecraft/textures/entity/zombie_villager,zombie_villager.png,mobs_mc_zombie_villager.png,,,,,y
+/assets/minecraft/textures/entity/zombie,zombie.png,mobs_mc_zombie.png,,,,,y
 /assets/minecraft/textures/item,flower_pot.png,mcl_flowerpots_flowerpot_inventory.png,,,,,
 /assets/minecraft/textures/block,flower_pot.png,mcl_flowerpots_flowerpot.png,,,,,y
 /assets/minecraft/textures/gui,widgets.png,mcl_inventory_hotbar.png,0,0,182,22,
+/assets/minecraft/textures/gui,widgets.png,i3_hotbar.png,0,0,182,22,
 /assets/minecraft/textures/gui,widgets.png,mcl_inventory_hotbar_selected.png,0,22,24,24,
 /assets/minecraft/textures/item,compass_00.png,mcl_compass_compass_00.png,,,,,
 /assets/minecraft/textures/item,compass_01.png,mcl_compass_compass_01.png,,,,,
@@ -1445,7 +1438,7 @@ Source path,Source file,Target file,xs,ys,xl,yl,Blacklist
 /assets/minecraft/textures/block,warped_planks.png,mcl_crimson_warped_hyphae_wood.png,,,,,
 /assets/minecraft/textures/block,warped_planks.png,mcl_crimson_warped_hyphae_wood_2nd.png,,,,,
 /assets/minecraft/textures/block,crimson_planks.png,mcl_crimson_crimson_hyphae_wood.png,,,,,
-/assets/minecraft/textures/block,crimson_stem.png,mcl_crimson_crimson_hyphae_side.png,0,0,16,16,
-/assets/minecraft/textures/block,warped_stem.png,mcl_crimson_warped_hyphae_side.png,0,0,16,16,
+/assets/minecraft/textures/block,crimson_stem.png,mcl_crimson_crimson_hyphae_side.png,,,,,
+/assets/minecraft/textures/block,warped_stem.png,mcl_crimson_warped_hyphae_side.png,,,,,
 /assets/minecraft/textures/block,crimson_stem_top.png,mcl_crimson_crimson_hyphae.png,,,,,
 /assets/minecraft/textures/block,warped_stem_top.png,mcl_crimson_warped_hyphae.png,,,,,
