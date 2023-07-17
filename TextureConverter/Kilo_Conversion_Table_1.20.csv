@@ -167,7 +167,7 @@ Source path,Source file,Target file,x1,y1,x2,y2,Blacklist
 /assets/minecraft/textures/block,oak_log.png,default_tree.png,,,,,
 /assets/minecraft/textures/block,oak_log_top.png,default_tree_top.png,,,,,
 /assets/minecraft/textures/block,water_still.png,default_water_source_animated.png,,,,,
-/assets/minecraft/textures/block,water_flow.png,default_water_flowing_animated.png,,,,,
+/assets/minecraft/textures/block,water_flow.png,default_water_flowing_animated.png,0,0,16,512,
 /assets/minecraft/textures/block,water_still.png,default_river_water_source_animated.png,,,,,
 /assets/minecraft/textures/block,water_flow.png,default_river_water_flowing_animated.png,,,,,
 /assets/minecraft/textures/block,oak_planks.png,default_wood.png,,,,,
