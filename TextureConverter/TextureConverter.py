@@ -70,6 +70,7 @@ Try: """+appname+""" \x1b[0;36m-i <path to resource pack>\x1b[0m -p <texture siz
 For the full help, use: """+appname+""" -h""")
 	sys.exit(2);
 
+pxScl = PXSIZE/16
 
 tex_dir = os.path.normpath(base_dir + "/assets/minecraft/textures")
 
@@ -93,6 +94,12 @@ def colorize_alpha(colormap, source, colormap_pixel, texture_size, destination):
 	colorize(colormap, source, colormap_pixel, texture_size, tempfile2.name+".png")
 	os.system("magick composite -compose Dst_In "+source+" "+tempfile2.name+".png -alpha Set "+destination)
 
+def px_uv(n):
+	return int(int(n)*pxScl)
+
+def uv_coords(x1, y1, x2, y2):
+	return {"x1": px_uv(x1), "y1": px_uv(y1), "x2": px_uv(x2), "y2": px_uv(y2)}
+
 def convert_textures_csv():
 	with open("Kilo_Conversion_Table_1.20.csv", newline="") as csvfile:
 		reader = csv.reader(csvfile, delimiter=",", quotechar='"')
@@ -108,10 +115,11 @@ def convert_textures_csv():
 			src_filename = row[1]
 			dst_filename = row[2]
 			if row[3] != "":
-				xs = row[3]
-				ys = row[4]
-				xl = row[5]
-				yl = row[6]
+				uv = uv_coords(row[3], row[4], row[5], row[6])
+				xs = str(uv["x1"])
+				ys = str(uv["y1"])
+				xl = str(uv["x2"])
+				yl = str(uv["y2"])
 			else:
 				xs = None
 			blacklisted = row[7]
@@ -360,21 +368,25 @@ def convert_sign_font():
 
 	for i in range(len(ascii_chars)):
 		char = ascii_chars[i]
-		width = "5"
+		width = 5
 		filename = char
 		if type(char) == int:
-			width = str(ascii_nonuniform_chars[char-1][1])
+			width = ascii_nonuniform_chars[char-1][1]
 			filename = ascii_nonuniform_chars[char-1][0]
 		filename += ".png"
 		sprite = i+1
-		texturex = str( (sprite%16)*8 )
-		texturey = str( floor(sprite/16)*8 + 16 )
-		if int(width) < 5:
-			os.system("magick convert -size 5x8 canvas:transparent \""+out_dir + "/"+filename+"\"")
-			os.system("magick convert \""+ascii_file+"\" -crop "+width+"x8"+"+"+texturex+"+"+texturey+" \""+tempfile1.name+".png\"")
-			os.system("magick composite \""+tempfile1.name+".png\" \""+out_dir + "/"+filename+"\" -gravity center \""+out_dir + "/"+filename+"\"")
+		uv = uv_coords((sprite%16)*8, floor(sprite/16)*8 + 16, width, 8)
+		texturex = str(uv["x1"])
+		texturey = str(uv["y1"])
+		width = uv["x2"]
+		height = uv["y2"]
+		nwidth = px_uv(5)
+		if type(char) != int:
+			os.system(f"magick convert -size {nwidth}x{height} canvas:transparent \"{out_dir}/{filename}\"")
+			os.system(f"magick convert \"{ascii_file}\" -crop {width}x{height}+{texturex}+{texturey} \"{tempfile1.name}.png\"")
+			os.system(f"magick composite \"{tempfile1.name}.png\" \"{out_dir}/{filename}\" -gravity center \"{out_dir}/{filename}\"")
 		else:
-			os.system("magick convert \""+ascii_file+"\" -crop "+width+"x8"+"+"+texturex+"+"+texturey+" \""+out_dir+"/"+filename+"\"")
+			os.system(f"magick convert \"{ascii_file}\" -crop {width}x{height}+{texturex}+{texturey} \"{out_dir}/{filename}\"")
 
 def convert_hud():
 	icons_file = tex_dir+"/gui/icons.png"
@@ -396,13 +408,15 @@ def convert_hud():
 		]
 	]
 
-	for icon_set in hud_icons:
+	for icon_set in hud_icons: #todo flip coords
 		bg = icon_set[0]
-		os.system(f"magick convert \"{icons_file}\" -crop {bg[3]}x{bg[4]}+{bg[1]}+{bg[2]} \"{out_dir}/{bg[0]}\"")
+		uv = uv_coords(bg[1], bg[2], bg[3], bg[4])
+		os.system(f"magick convert \"{icons_file}\" -crop {uv['x2']}x{uv['y2']}+{uv['x1']}+{uv['y1']} \"{out_dir}/{bg[0]}\"")
 
 		for i in range (1, len(icon_set)):
 			icon = icon_set[i]
-			os.system(f"magick convert \"{icons_file}\" -crop {icon[3]}x{icon[4]}+{icon[1]}+{icon[2]} \"{out_dir}/{icon[0]}\"")
+			uv = uv_coords(icon[1], icon[2], icon[3], icon[4])
+			os.system(f"magick convert \"{icons_file}\" -crop {uv['x2']}x{uv['y2']}+{uv['x1']}+{uv['y1']} \"{out_dir}/{icon[0]}\"")
 			os.system(f"magick composite -compose dst-over \"{out_dir}/{bg[0]}\" \"{out_dir}/{icon[0]}\" \"{out_dir}/{icon[0]}\"")
 	
 	os.system(f"magick convert \"{icons_file}\" -crop 182x5+0+64 -rotate 90 \"{out_dir}/mcl_experience_bar_background.png\"")
@@ -458,8 +472,7 @@ def convert_villagers():
 		"mobs_mc_zombie_priest.png",
 		"mobs_mc_zombie_farmer.png",
 		"mobs_mc_zombie_librarian.png",
-		"mobs_mc_zombie_smith.png",
-		"mobs_mc_zombie_villager.png"
+		"mobs_mc_zombie_smith.png"
 	]
 
 	os.system(f"magick composite {tex_dir}/entity/villager/type/plains.png {tex_dir}/entity/villager/villager.png {out_dir}/mobs_mc_villager.png")
@@ -467,9 +480,10 @@ def convert_villagers():
 	for villager in villagers:
 		os.system(f"magick composite {out_dir}/{villager} {out_dir}/mobs_mc_villager.png {out_dir}/{villager}") 
 
-	#os.system(f"magick composite {tex_dir}/entity/zombie_villager/type/plains.png {tex_dir}/entity/zombie_villager/zombie_villager.png {tempfile1.name}.png")
+	os.system(f"magick convert {out_dir}/mobs_mc_zombie_villager.png -crop 16x16+44+22 {tempfile1.name}.png")
+	os.system(f"magick composite -compose dst-over {tempfile1.name}.png -geometry +44+38 {out_dir}/mobs_mc_zombie_villager.png {out_dir}/mobs_mc_zombie_villager.png")
 	for villager in zombie_villagers:
-		os.system(f"magick composite {out_dir}/{villager} {tempfile1.name}.png {out_dir}/{villager}") 
+		os.system(f"magick composite {out_dir}/{villager} {out_dir}/mobs_mc_zombie_villager.png {out_dir}/{villager}") 
 
 def progress_color(pos, curpos):
 	if pos < curpos:
