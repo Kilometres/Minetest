@@ -411,7 +411,7 @@ def convert_hud():
 	os.system(f"magick convert \"{icons_file}\" -crop 16x16+0x0 -scale 300% \"{out_dir}/crosshair.png\"")
 
 
-def patch_chests():
+def patch_chests(): #todo double chests
 	chest_sections = [ #width, height, x1, y1
 		[28, 14, 14, 0 ],
 		[14, 5 , 0 , 14],
@@ -422,7 +422,9 @@ def patch_chests():
 	]
 
 	single_chests = [
-		"mcl_chests_normal.png", "mcl_chests_trapped.png", "mcl_chests_ender.png", "mcl_chests_normal_present.png", "mcl_chests_trapped_present.png", "mcl_chests_ender_present.png"
+		"mcl_chests_normal.png", "mcl_chests_normal_present.png",
+		"mcl_chests_trapped.png", "mcl_chests_trapped_present.png",
+		"mcl_chests_ender.png", "mcl_chests_ender_present.png"
 	]
 
 	for single_chest in single_chests:
@@ -430,6 +432,44 @@ def patch_chests():
 		for sec in chest_sections:
 			os.system(f"magick convert -crop {sec[0]}x{sec[1]}+{sec[2]}+{sec[3]} -rotate 180 {chest_path} {tempfile1.name}.png")
 			os.system(f"magick composite {tempfile1.name}.png -geometry +{sec[2]}+{sec[3]} {chest_path} {chest_path}")
+
+
+def convert_villagers():
+	villagers = [
+		"mobs_mc_villager_armorer.png",
+		"mobs_mc_villager_butcher.png",
+		"mobs_mc_villager_cartographer.png",
+		"mobs_mc_villager_priest.png",
+		"mobs_mc_villager_farmer.png",
+		"mobs_mc_villager_fisherman.png",
+		"mobs_mc_villager_fletcher.png",
+		"mobs_mc_villager_leatherworker.png",
+		"mobs_mc_villager_librarian.png",
+		"mobs_mc_villager_mason.png",
+		"mobs_mc_villager_nitwit.png",
+		"mobs_mc_villager_sheperd.png",
+		"mobs_mc_villager_toolsmith.png",
+		"mobs_mc_villager_weaponsmith.png",
+		"mobs_mc_villager_smith.png",
+	]
+
+	zombie_villagers = [
+		"mobs_mc_zombie_butcher.png",
+		"mobs_mc_zombie_priest.png",
+		"mobs_mc_zombie_farmer.png",
+		"mobs_mc_zombie_librarian.png",
+		"mobs_mc_zombie_smith.png",
+		"mobs_mc_zombie_villager.png"
+	]
+
+	os.system(f"magick composite {tex_dir}/entity/villager/type/plains.png {tex_dir}/entity/villager/villager.png {out_dir}/mobs_mc_villager.png")
+
+	for villager in villagers:
+		os.system(f"magick composite {out_dir}/{villager} {out_dir}/mobs_mc_villager.png {out_dir}/{villager}") 
+
+	#os.system(f"magick composite {tex_dir}/entity/zombie_villager/type/plains.png {tex_dir}/entity/zombie_villager/zombie_villager.png {tempfile1.name}.png")
+	for villager in zombie_villagers:
+		os.system(f"magick composite {out_dir}/{villager} {tempfile1.name}.png {out_dir}/{villager}") 
 
 def progress_color(pos, curpos):
 	if pos < curpos:
@@ -445,7 +485,7 @@ def progress_list(position):
 {progress_color(1, position)} Map Textures\x1b[0m		{progress_color(9, position)} Sign Font Textures\x1b[0m
 {progress_color(2, position)} Armor Textures\x1b[0m		{progress_color(10, position)} Hud Textures\x1b[0m
 {progress_color(3, position)} Banner Overlay Textures\x1b[0m	{progress_color(11, position)} Patch Chest Textures\x1b[0m
-{progress_color(4, position)} Rail Textures\x1b[0m		
+{progress_color(4, position)} Rail Textures\x1b[0m		{progress_color(12, position)} Villager Textures\x1b[0m
 {progress_color(5, position)} Foliage Textures\x1b[0m		
 {progress_color(6, position)} Palette Textures\x1b[0m		
 {progress_color(7, position)} Translating Metadata\x1b[0m	
@@ -482,6 +522,8 @@ def convert_textures():
 	progress_list(11)
 	patch_chests()
 	progress_list(12)
+	convert_villagers()
+	progress_list(13)
 
 	if dry_run:
 		shutil.rmtree(out_dir)
