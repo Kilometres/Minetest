@@ -151,7 +151,7 @@ Source path,Source file,Target file,x1,y1,x2,y2,Blacklist
 /assets/minecraft/textures/block,jungle_planks.png,default_junglewood.png,,,,,
 /assets/minecraft/textures/block,ladder.png,default_ladder.png,,,,,
 /assets/minecraft/textures/block,lava_still.png,default_lava_source_animated.png,,,,,
-/assets/minecraft/textures/block,lava_flow.png,default_lava_flowing_animated.png,,,,,
+/assets/minecraft/textures/block,lava_flow.png,default_lava_flowing_animated.png,0,0,16,512,
 /assets/minecraft/textures/block,mossy_cobblestone.png,default_mossycobble.png,,,,,
 /assets/minecraft/textures/block,obsidian.png,default_obsidian.png,,,,,
 /assets/minecraft/textures/item,paper.png,default_paper.png,,,,,
