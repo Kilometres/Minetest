@@ -412,7 +412,24 @@ def convert_hud():
 
 
 def patch_chests():
-	progress_color(1, 1)
+	chest_sections = [ #width, height, x1, y1
+		[28, 14, 14, 0 ],
+		[14, 5 , 0 , 14],
+		[42, 5 , 14, 14],
+		[28, 14, 14, 19],
+		[14, 10, 0 , 33],
+		[42, 10, 14, 33]
+	]
+
+	single_chests = [
+		"mcl_chests_normal.png", "mcl_chests_trapped.png", "mcl_chests_ender.png", "mcl_chests_normal_present.png", "mcl_chests_trapped_present.png", "mcl_chests_ender_present.png"
+	]
+
+	for single_chest in single_chests:
+		chest_path = out_dir+"/"+single_chest
+		for sec in chest_sections:
+			os.system(f"magick convert -crop {sec[0]}x{sec[1]}+{sec[2]}+{sec[3]} -rotate 180 {chest_path} {tempfile1.name}.png")
+			os.system(f"magick composite {tempfile1.name}.png -geometry +{sec[2]}+{sec[3]} {chest_path} {chest_path}")
 
 def progress_color(pos, curpos):
 	if pos < curpos:
