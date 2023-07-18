@@ -72,7 +72,7 @@ def downloadFile(url, filepath):
     with open(filepath, "wb") as file:
         file.write(resp.content)
 
-downloadFile('https://github.com/Kilometres/Minetest','README.md')
+downloadFile('https://raw.githubusercontent.com/Kilometres/Minetest/main/FontInstaller/read.md?token=GHSAT0AAAAAACDGMQZEM55WDKRBJHKIGZN6ZFXEXPA','fonts/MC-Fonts/README.md')
 #Monospace
 downloadFile('https://github.com/IdreesInc/Monocraft/releases/download/v3.0/Monocraft-no-ligatures.ttf', 'fonts/MC-Fonts/Minecraft-Monospace.ttf')
 #Minecraft
@@ -80,3 +80,5 @@ downloadFile('https://get.fontspace.co/download/font/Bmg3/YzZmODk4Y2EzMzc3NGM2MD
 downloadFile('https://get.fontspace.co/download/font/R8Mo/YjMxYzA1ZjZhNTcxNDFiZDk2NjRmMDVmMDNkYmFmYzIub3Rm/MinecraftItalic-R8Mo.otf', 'fonts/MC-Fonts/Minecraft-Bold.otf')
 downloadFile('https://get.fontspace.co/download/font/nMK1/ZWIzOTlmODUzY2E0NGE1Njk2MDE2MjQ2ZDdmYTYwMWEub3Rm/MinecraftBold-nMK1.otf', 'fonts/MC-Fonts/Minecraft-Italic.otf')
 downloadFile('https://get.fontspace.co/download/font/1y1e/ZTE2NjE0ZDY2YjEyNDM2M2FiOTQ4MGQ1ZDBiMzlkYTkub3Rm/MinecraftBoldItalic-1y1e.otf', 'fonts/MC-Fonts/Minecraft-BoldItalic.otf')
+
+print("Fonts installed successfully.")
