@@ -272,8 +272,8 @@ def convert_foliage():
 	colorize_alpha(GRASS, tex_dir+"/block/large_fern_top.png", pcol, str(PXSIZE), out_dir+"/mcl_flowers_double_plant_fern_inv.png")
 	colorize_alpha(GRASS, tex_dir+"/block/large_fern_bottom.png", pcol, str(PXSIZE), out_dir+"/mcl_flowers_double_plant_grass_inv.png")
 
-
-	os.system(f"magick convert -size 16x16 xc:transparent {out_dir}/mcl_dirt_grass_shadow.png")
+	os.system(f"convert {tex_dir}/block/grass_block_side_overlay.png -alpha extract -threshold 0 -negate -transparent white {tempfile1.name}.png")
+	os.system(f"magick convert {tex_dir}/block/grass_block_side.png ( {tempfile1.name}.png -colorspace gray -alpha off ) -compose copy-opacity -composite {out_dir}/mcl_dirt_grass_shadow.png")
 
 def convert_grass_palettes():
 	GRASS = tex_dir+"/colormap/grass.png"
