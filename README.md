@@ -16,7 +16,7 @@ This is an unofficial MineClone2 Texture Converter. This will convert textures f
 Supported Minecraft version: `1.20 (Java Edition)`
 ### Requirements
 - Python 3.x
-- [Imagemagick](https://imagemagick.org/script/download.php#windows) (use of the `magick` command)
+- [Imagemagick](https://imagemagick.org/script/download.php#windows) (accessible on path as `magick`)
 <br><br>
 
 ### Usage
