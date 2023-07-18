@@ -382,7 +382,7 @@ def convert_sign_font():
 		height = uv["y2"]
 		nwidth = px_uv(5)
 		if type(char) != int:
-			os.system(f"magick convert -size {nwidth}x{height} canvas:transparent \"{out_dir}/{filename}\"")
+			os.system(f"magick convert -size {nwidth}x{height} xc:transparent -define png:color-type=6 \"{out_dir}/{filename}\"")
 			os.system(f"magick convert \"{ascii_file}\" -crop {width}x{height}+{texturex}+{texturey} \"{tempfile1.name}.png\"")
 			os.system(f"magick composite \"{tempfile1.name}.png\" \"{out_dir}/{filename}\" -gravity center \"{out_dir}/{filename}\"")
 		else:
@@ -426,7 +426,20 @@ def convert_hud():
 
 
 def patch_chests(): #todo double chests
-	chest_sections = [ #width, height, x1, y1
+
+	single_chests = [
+		"mcl_chests_normal.png", "mcl_chests_normal_present.png",
+		"mcl_chests_trapped.png", "mcl_chests_trapped_present.png",
+		"mcl_chests_ender.png", "mcl_chests_ender_present.png"
+	]
+
+	double_chests = [
+		["normal_left.png", "normal_right.png", "mcl_chests_normal_double.png"],
+		["trapped_left.png", "trapped_right.png", "mcl_chests_trapped_double.png"],
+		["christmas_left.png", "christmas_right.png", "mcl_chests_normal_double_present.png"],
+	]
+
+	chest_sections_single = [ #width, height, x1, y1
 		[28, 14, 14, 0 ],
 		[14, 5 , 0 , 14],
 		[42, 5 , 14, 14],
@@ -435,18 +448,53 @@ def patch_chests(): #todo double chests
 		[42, 10, 14, 33]
 	]
 
-	single_chests = [
-		"mcl_chests_normal.png", "mcl_chests_normal_present.png",
-		"mcl_chests_trapped.png", "mcl_chests_trapped_present.png",
-		"mcl_chests_ender.png", "mcl_chests_ender_present.png"
+	chest_sections_left = [ #x1, y1, width, height, x2, y2, r
+		[43, 33, 15, 10, 29, 33, 180],
+		[29, 19, 15, 14, 29, 19, 0  ],
+		[14, 0 , 15, 14, 44, 0 , 180],
+		[43, 14, 15, 5 , 29, 14, 180],
+		[29, 0 , 15, 14, 29, 0 , 0  ],
+		[14, 19, 15, 14, 44, 19, 180],
+		[29, 33, 14, 10, 44, 33, 180],
+		[14, 33, 15, 10, 58, 33, 180],
+		[29, 14, 14, 5 , 44, 14, 180],
+		[14, 14, 15, 5 , 58, 14, 180],
+		[1 , 0 , 3 , 5 , 3 , 0 , 0  ]
+	]
+
+	chest_sections_right = [ #x1, y1, width, height, x2, y2, r
+		[29, 19, 15, 14, 14, 19, 0  ],
+		[43, 33, 15, 10, 14, 33, 180],
+		[14, 0 , 15, 14, 59, 0 , 180],
+		[29, 0 , 15, 14, 14, 0 , 0  ],
+		[14, 19, 15, 14, 59, 19, 180],
+		[14, 33, 15, 10, 73, 33, 180],
+		[0 , 33, 14, 10, 0 , 33, 180],
+		[43, 14, 15, 5 , 14, 14, 180],
+		[14, 14, 15, 5 , 73, 14, 180],
+		[0 , 14, 14, 5 , 0 , 14, 180],
+		[0 , 0 , 3 , 5 , 0 , 0 , 0  ],
+		[3 , 1 , 1 , 4 , 2 , 1 , 0  ]
 	]
 
 	for single_chest in single_chests:
-		chest_path = out_dir+"/"+single_chest
-		for sec in chest_sections:
+		chest_path = "\""+out_dir+"/"+single_chest+"\""
+		for sec in chest_sections_single:
 			os.system(f"magick convert -crop {sec[0]}x{sec[1]}+{sec[2]}+{sec[3]} -rotate 180 {chest_path} {tempfile1.name}.png")
 			os.system(f"magick composite {tempfile1.name}.png -geometry +{sec[2]}+{sec[3]} {chest_path} {chest_path}")
+	
+	for double_chest in double_chests:
+		chest_path = "\""+out_dir+"/"+double_chest[2]+"\""
+		os.system(f"magick convert -size {128}x{64} xc:transparent -define png:color-type=6 {chest_path}")
 
+		for sec in chest_sections_left:
+			os.system(f"magick convert -crop {sec[2]}x{sec[3]}+{sec[0]}+{sec[1]} -rotate {sec[6]} \"{tex_dir}/entity/chest/{double_chest[0]}\" {tempfile1.name}.png")
+			os.system(f"magick composite {tempfile1.name}.png -geometry +{sec[4]}+{sec[5]} {chest_path} {chest_path}")
+		
+		for sec in chest_sections_right:
+			os.system(f"magick convert -crop {sec[2]}x{sec[3]}+{sec[0]}+{sec[1]} -rotate {sec[6]} \"{tex_dir}/entity/chest/{double_chest[1]}\" {tempfile1.name}.png")
+			os.system(f"magick composite {tempfile1.name}.png -geometry +{sec[4]}+{sec[5]} {chest_path} {chest_path}")
+	
 
 def convert_villagers():
 	villagers = [
