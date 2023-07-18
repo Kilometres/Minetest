@@ -2,6 +2,8 @@
 import shutil, csv, os, tempfile, sys, getopt, json
 from math import floor
 
+#https://github.com/Kilometres/Minetest/
+
 if shutil.which("magick") == None:
 	print("\x1b[1;31mERROR: Imagemagick not installed.\x1b[0m (or not accessible on the path as 'magick')")
 	sys.exit(2)
