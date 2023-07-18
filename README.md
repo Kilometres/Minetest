@@ -1,6 +1,10 @@
 <h1 align="center"> Minetest Tools & Mods </h1>
+<p align="center">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Minetest_logo.svg/1200px-Minetest_logo.svg.png" alt="minetest logo" width="250"/>
+ <br>
+    A compilation of my <a href="https://github.com/minetest/minetest">minetest</a> and <a href="https://git.minetest.land/MineClone2/MineClone2">mineclone2</a> tools, guides and mods.
+</p>
 
-A compilation of my [minetest](https://github.com/minetest/minetest) and [mineclone2](https://git.minetest.land/MineClone2/MineClone2) tools, guides and mods.
 ### Tools
  - [Texture Pack Converter](#t-minecraft-to-minetestmineclone2-texture-pack-converter)
  - Minecraft Font Installer for Minetest
@@ -32,7 +36,9 @@ Simply run `python TextureConverter.py -i <input dir>` and the converted texture
 
 ### Known Issues
 This is a work-in-progress tool, and therefore has some known issues:
-- Can cause errors with texture packs with spaces in their names (even names that appear escaped)
+- [Texture Related Issues](https://github.com/Kilometres/Minetest/projects?query=is%3Aopen) (being fixed)
+- Does not yet support texture packs with sizes other than 16x16 (planned to change)
+- Can cause errors with texture packs with spaces in their names, even names that appear escaped. (fixed when move to image library)
 <br><br>
 
 ## [T] Minecraft Fonts for Minetest Auto-Installer
