@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 import shutil, csv, os, tempfile, sys, getopt, json
 from math import floor
+
+if shutil.which("magick") == None:
+	print("\x1b[1;31mERROR: Imagemagick not installed.\x1b[0m (or not accessible on the path as 'magick')")
+	sys.exit(2)
+
 appname = "TextureConverter.py"
 
 base_dir = None
@@ -68,13 +73,16 @@ if base_dir == None:
 Try: """+appname+""" \x1b[0;36m-i <path to resource pack>\x1b[0m -p <texture size>
 
 For the full help, use: """+appname+""" -h""")
-	sys.exit(2);
+	sys.exit(2)
+
+if PXSIZE != 16:
+	print("\x1b[0;33mWARNING: Support for Resource Packs using texture sizes other than 16x16 is currently still in development, expect \x1b[1;31mmajor and unplayable\x1b[0;33m texture misrepresentations and poorly mapped textures.\x1b[0m")
 
 pxScl = PXSIZE/16
 
 tex_dir = os.path.normpath(base_dir + "/assets/minecraft/textures")
 
-out_name = os.path.basename(base_dir) + '_Converted' #todo use path join
+out_name = os.path.basename(base_dir) + '_Converted'
 out_dir = os.path.normpath(base_dir + '/../' + out_name)
 
 if os.path.isdir(out_dir):
@@ -82,7 +90,7 @@ if os.path.isdir(out_dir):
 		shutil.rmtree(out_dir)
 	else:
 		print("\x1b[1;33mFolder already exists at output directory:\x1b[0m "+out_dir+"\nUse the \x1b[1;36m-f\x1b[0m flag to override.")
-		sys.exit(2);
+		sys.exit(2)
 	
 
 # FUNCTION DEFINITIONS
@@ -533,6 +541,58 @@ def convert_villagers():
 	for villager in zombie_villagers:
 		os.system(f"magick composite {out_dir}/{villager} {out_dir}/mobs_mc_zombie_villager.png {out_dir}/{villager}") 
 
+def patch_doors():
+	doors = [
+		["mcl_mangrove_door_top.png", "mcl_mangrove_door_bottom.png", "mcl_mangrove_door_top_side.png", "mcl_mangrove_door_bottom_side.png", "mcl_mangrove_door_top_toppart.png", "mcl_mangrove_door_bottom_bottompart.png"],
+		["mcl_doors_door_wood_upper.png", "mcl_doors_door_wood_lower.png", "mcl_doors_door_wood_upper_side.png", "mcl_doors_door_wood_lower_side.png", "mcl_doors_door_wood_upper_toppart.png", "mcl_doors_door_wood_lower_bottompart.png"],
+		["mcl_doors_door_spruce_upper.png", "mcl_doors_door_spruce_lower.png", "mcl_doors_door_spruce_upper_side.png", "mcl_doors_door_spruce_lower_side.png", "mcl_doors_door_spruce_upper_toppart.png", "mcl_doors_door_spruce_lower_bottompart.png"],
+		["mcl_doors_door_jungle_upper.png", "mcl_doors_door_jungle_lower.png", "mcl_doors_door_jungle_upper_side.png", "mcl_doors_door_jungle_lower_side.png", "mcl_doors_door_jungle_upper_toppart.png", "mcl_doors_door_jungle_lower_bottompart.png"],
+		["mcl_doors_door_iron_upper.png", "mcl_doors_door_iron_lower.png", "mcl_doors_door_iron_upper_side.png", "mcl_doors_door_iron_lower_side.png", "mcl_doors_door_iron_upper_toppart.png", "mcl_doors_door_iron_lower_bottompart.png"],
+		["mcl_doors_door_dark_oak_upper.png", "mcl_doors_door_dark_oak_lower.png", "mcl_doors_door_dark_oak_upper_side.png", "mcl_doors_door_dark_oak_lower_side.png", "mcl_doors_door_dark_oak_upper_toppart.png", "mcl_doors_door_dark_oak_lower_bottompart.png"],
+		["mcl_doors_door_birch_upper.png", "mcl_doors_door_birch_lower.png", "mcl_doors_door_birch_upper_side.png", "mcl_doors_door_birch_lower_side.png", "mcl_doors_door_birch_upper_toppart.png", "mcl_doors_door_birch_lower_bottompart.png"],
+		["mcl_doors_door_acacia_upper.png", "mcl_doors_door_acacia_lower.png", "mcl_doors_door_acacia_upper_side.png", "mcl_doors_door_acacia_lower_side.png", "mcl_doors_door_acacia_upper_toppart.png", "mcl_doors_door_acacia_lower_bottompart.png"],
+		["mcl_crimson_warped_door_top.png", "mcl_crimson_warped_door_bottom.png", "mcl_crimson_warped_door_top_side.png", "mcl_crimson_warped_door_bottom_side.png", "mcl_crimson_warped_door_top_toppart.png", "mcl_crimson_warped_door_bottom_bottompart.png"],
+		["mcl_crimson_crimson_door_top.png", "mcl_crimson_crimson_door_bottom.png", "mcl_crimson_crimson_door_top_side.png", "mcl_crimson_crimson_door_bottom_side.png", "mcl_crimson_crimson_door_top_toppart.png", "mcl_crimson_crimson_door_bottom_bottompart.png"],
+		["mcl_cherry_blossom_door_top.png", "mcl_cherry_blossom_door_bottom.png", "mcl_cherry_blossom_door_top_side.png", "mcl_cherry_blossom_door_bottom_side.png", "mcl_cherry_blossom_door_top_toppart.png", "mcl_cherry_blossom_door_bottom_bottompart.png"],
+		["mcl_bamboo_door_top.png", "mcl_bamboo_door_bottom.png", "mcl_bamboo_door_top_side.png", "mcl_bamboo_door_bottom_side.png", "mcl_bamboo_door_top_toppart.png", "mcl_bamboo_door_bottom_bottompart.png"]
+	]
+
+	for door in doors:
+		door_top = "\""+out_dir+"/"+door[0]+"\""
+		door_bottom = "\""+out_dir+"/"+door[1]+"\""
+		door_sides_top = "\""+out_dir+"/"+door[2]+"\""
+		door_sides_bottom = "\""+out_dir+"/"+door[3]+"\""
+		door_side_upper = "\""+out_dir+"/"+door[4]+"\""
+		door_side_lower = "\""+out_dir+"/"+door[5]+"\""
+
+		width = px_uv(3)
+
+		#door_sides_top
+		os.system(f"magick convert -size {PXSIZE}x{PXSIZE} xc:transparent -define png:color-type=6 {door_sides_top}")
+		os.system(f"magick convert -crop {width}x{PXSIZE}+0+0 {door_top} \"{tempfile1.name}.png\"")
+		os.system(f"magick convert -crop {width}x{PXSIZE}+0+0 -flop {door_top} \"{tempfile2.name}.png\"")
+		os.system(f"magick composite {tempfile1.name}.png -geometry +0+0 {door_sides_top} {door_sides_top}")
+		os.system(f"magick composite {tempfile2.name}.png -geometry +{PXSIZE-width}+0 {door_sides_top} {door_sides_top}")
+
+		#door_sides_bottom
+		os.system(f"magick convert -size {PXSIZE}x{PXSIZE} xc:transparent -define png:color-type=6 {door_sides_bottom}")
+		os.system(f"magick convert -crop {width}x{PXSIZE}+0+0 {door_bottom} \"{tempfile1.name}.png\"")
+		os.system(f"magick convert -crop {width}x{PXSIZE}+0+0 -flop {door_bottom} \"{tempfile2.name}.png\"")
+		os.system(f"magick composite {tempfile1.name}.png -geometry +0+0 {door_sides_bottom} {door_sides_bottom}")
+		os.system(f"magick composite {tempfile2.name}.png -geometry +{PXSIZE-width}+0 {door_sides_bottom} {door_sides_bottom}")
+
+		#door_side_upper
+		os.system(f"magick convert -size {PXSIZE}x{PXSIZE} xc:transparent -define png:color-type=6 {door_side_upper}")
+		os.system(f"magick convert -crop {PXSIZE}x{width}+0+0 {door_top} \"{tempfile1.name}.png\"")
+		os.system(f"magick composite {tempfile1.name}.png -geometry +0+0 {door_side_upper} {door_side_upper}")
+		os.system(f"magick composite {tempfile1.name}.png -geometry +0+{PXSIZE-width} {door_side_upper} {door_side_upper}")
+
+		#door_side_lower
+		os.system(f"magick convert -size {PXSIZE}x{PXSIZE} xc:transparent -define png:color-type=6 {door_side_lower}")
+		os.system(f"magick convert -crop {PXSIZE}x{width}+0+{PXSIZE-width} -flop {door_bottom} \"{tempfile1.name}.png\"")
+		os.system(f"magick composite {tempfile1.name}.png -geometry +0+0 {door_side_lower} {door_side_lower}")
+		os.system(f"magick composite {tempfile1.name}.png -geometry +0+{PXSIZE-width} {door_side_lower} {door_side_lower}")
+
 def progress_color(pos, curpos):
 	if pos < curpos:
 		return " ✔ \x1b[0;37m"
@@ -548,7 +608,7 @@ def progress_list(position):
 {progress_color(2, position)} Armor Textures\x1b[0m		{progress_color(10, position)} Hud Textures\x1b[0m
 {progress_color(3, position)} Banner Overlay Textures\x1b[0m	{progress_color(11, position)} Patch Chest Textures\x1b[0m
 {progress_color(4, position)} Rail Textures\x1b[0m		{progress_color(12, position)} Villager Textures\x1b[0m
-{progress_color(5, position)} Foliage Textures\x1b[0m		
+{progress_color(5, position)} Foliage Textures\x1b[0m		{progress_color(13, position)} Patch Door Edges Textures\x1b[0m
 {progress_color(6, position)} Palette Textures\x1b[0m		
 {progress_color(7, position)} Translating Metadata\x1b[0m	
 ''')
@@ -586,6 +646,8 @@ def convert_textures():
 	progress_list(12)
 	convert_villagers()
 	progress_list(13)
+	patch_doors()
+	progress_list(14)
 
 	if dry_run:
 		shutil.rmtree(out_dir)
