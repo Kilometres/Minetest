@@ -186,6 +186,28 @@ def convert_armor():
 		if os.path.isfile(layer_2):
 			leggings = adir + "/" + a[5]
 			os.system("magick convert -size "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" xc:none ( "+layer_2+" -scale "+str(APXSIZE * 4)+"x"+str(APXSIZE * 2)+" -geometry +0+"+str(APXSIZE)+" -crop "+str(APXSIZE * 2.5)+"x"+str(APXSIZE)+"+0+"+str(APXSIZE)+" ) -composite -channel A -fx \"(a > 0.0) ? 1.0 : 0.0\" "+leggings)
+	
+	leather_armor = armor_files[0]
+
+	os.system(f"magick convert -size {PXSIZE*4}x{PXSIZE*2} xc:#A06540 {tempfile1.name}.png")
+
+	for i in range(3, len(leather_armor)):
+		os.system(f"magick convert {out_dir}/{leather_armor[i]} {tempfile1.name}.png -compose Multiply -composite {tempfile2.name}.png")
+		os.system(f"magick composite -compose Dst_In {out_dir}/{leather_armor[i]} {tempfile2.name}.png -alpha Set {out_dir}/{leather_armor[i]}")
+	
+
+	leather_armor_items = ["mcl_armor_inv_helmet_leather.png", "mcl_armor_inv_chestplate_leather.png", "mcl_armor_inv_leggings_leather.png", "mcl_armor_inv_boots_leather.png"]
+	leather_armor_item_overlays = ["leather_helmet_overlay.png", "leather_chestplate_overlay.png", "leather_leggings_overlay.png", "leather_boots_overlay.png"]
+	os.system(f"magick convert -size {PXSIZE}x{PXSIZE} xc:#A06540 {tempfile1.name}.png")
+
+	for i, item in enumerate(leather_armor_items):
+		os.system(f"magick convert {out_dir}/{item} {tempfile1.name}.png -compose Multiply -composite {tempfile2.name}.png")
+		os.system(f"magick composite -compose Dst_In {out_dir}/{item} {tempfile2.name}.png -alpha Set {out_dir}/{item}")
+		os.system(f"magick composite {tex_dir}/item/{leather_armor_item_overlays[i]} {out_dir}/{item} {out_dir}/{item}")
+		
+
+	
+
 
 def convert_rails():
 	rails = [
